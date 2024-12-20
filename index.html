@@ -6,13 +6,13 @@
     <title>Image Gallery by Resolution</title>
     <style>
         html {
-            font-size: 75%; /* Scale down by 25% */
+            font-size: 50%; /* Scaled down further, now at 50% of original size */
         }
         
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 90px; /* Adjusted for new scale */
+            padding-top: 70px; /* Adjusted for new scale */
             background-color: #f5f5f5;
         }
         
@@ -24,27 +24,27 @@
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             z-index: 1000;
-            padding: 8px 0;
+            padding: 6px 0;
         }
 
         .header h1 {
             margin: 0;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
             color: #333;
-            font-size: 2rem;
+            font-size: 2.2rem;
         }
 
         .nav-container {
             overflow-x: auto;
             white-space: nowrap;
-            padding: 8px 16px;
+            padding: 6px 12px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
         }
 
         .nav-container::-webkit-scrollbar {
-            height: 4px;
+            height: 3px;
         }
 
         .nav-container::-webkit-scrollbar-track {
@@ -58,16 +58,16 @@
 
         .resolution-link {
             display: inline-block;
-            padding: 6px 12px;
-            margin: 0 4px;
+            padding: 4px 8px;
+            margin: 0 3px;
             background: #fff;
             color: #333;
             text-decoration: none;
-            border-radius: 16px;
+            border-radius: 12px;
             border: 1px solid #ddd;
             transition: all 0.2s;
             font-family: monospace;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
         .resolution-link:hover {
@@ -77,8 +77,8 @@
         }
 
         .section {
-            margin: 32px 0;
-            scroll-margin-top: 90px;
+            margin: 24px 0;
+            scroll-margin-top: 70px;
         }
 
         .section h2 {
@@ -86,19 +86,20 @@
             color: #333;
             font-family: monospace;
             font-size: 1.8rem;
+            margin: 12px 0;
         }
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-            padding: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 12px;
         }
 
         .gallery-item {
             background: white;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 4px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
@@ -112,7 +113,7 @@
         .gallery-item img {
             width: 100%;
             height: auto;
-            border-radius: 3px;
+            border-radius: 2px;
             display: block;
         }
 
@@ -128,7 +129,7 @@
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s;
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .image-container:hover .download-overlay {
@@ -138,8 +139,8 @@
         .download-btn {
             background: #fff;
             color: #333;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 3px;
             text-decoration: none;
             font-weight: bold;
             transition: transform 0.2s;
@@ -151,16 +152,19 @@
         }
 
         .caption {
-            margin-top: 6px;
+            margin-top: 4px;
             text-align: center;
             color: #666;
             font-family: monospace;
             font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .loader {
             text-align: center;
-            padding: 16px;
+            padding: 12px;
             font-size: 1.4rem;
         }
 
@@ -168,7 +172,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            height: 3px;
+            height: 2px;
             background: #4CAF50;
             transition: width 0.3s;
             z-index: 1001;
@@ -176,11 +180,11 @@
     </style>
 </head>
 <body>
+    <!-- Rest of the HTML remains the same -->
     <div id="loading-progress"></div>
     <div class="header">
         <h1>Image Gallery by Resolution</h1>
         <nav class="nav-container" id="resolution-nav">
-            <!-- Navigation links will be populated here -->
         </nav>
     </div>
     <div id="gallery-container">
@@ -279,7 +283,7 @@
             const img = document.createElement('img');
             img.src = getRawGitHubUrl(imagePath);
             img.alt = imagePath.split('/').pop();
-            img.loading = 'lazy'; // Enable lazy loading
+            img.loading = 'lazy';
 
             const overlay = document.createElement('div');
             overlay.className = 'download-overlay';
@@ -316,10 +320,8 @@
                 const galleryContainer = document.getElementById('gallery-container');
                 galleryContainer.innerHTML = '';
 
-                // Load images in batches and get resolution groups
                 const resolutionGroups = await loadImagesInBatches(imageFiles);
 
-                // Sort resolutions by total pixels
                 const resolutions = Array.from(resolutionGroups.keys())
                     .sort((a, b) => {
                         const [aWidth, aHeight] = a.split('x').map(Number);
@@ -327,7 +329,6 @@
                         return (aWidth * aHeight) - (bWidth * bHeight);
                     });
 
-                // Create all sections first
                 const fragment = document.createDocumentFragment();
                 createNavigationLinks(resolutions);
 
