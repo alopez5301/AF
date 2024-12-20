@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skrunks image Repository</title>
+    <title>Skrunks Image Repo</title>
     <style>
-        html {
-            font-size: 50%; /* Scaled down further, now at 50% of original size */
-        }
-        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 70px; /* Adjusted for new scale */
+            padding-top: 120px;
             background-color: #f5f5f5;
         }
         
@@ -24,27 +20,26 @@
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             z-index: 1000;
-            padding: 6px 0;
+            padding: 10px 0;
         }
 
         .header h1 {
             margin: 0;
-            padding: 6px;
+            padding: 10px;
             text-align: center;
             color: #333;
-            font-size: 2.2rem;
         }
 
         .nav-container {
             overflow-x: auto;
             white-space: nowrap;
-            padding: 6px 12px;
+            padding: 10px 20px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
         }
 
         .nav-container::-webkit-scrollbar {
-            height: 3px;
+            height: 6px;
         }
 
         .nav-container::-webkit-scrollbar-track {
@@ -53,21 +48,20 @@
 
         .nav-container::-webkit-scrollbar-thumb {
             background: #888;
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .resolution-link {
             display: inline-block;
-            padding: 4px 8px;
-            margin: 0 3px;
+            padding: 8px 15px;
+            margin: 0 5px;
             background: #fff;
             color: #333;
             text-decoration: none;
-            border-radius: 12px;
+            border-radius: 20px;
             border: 1px solid #ddd;
             transition: all 0.2s;
             font-family: monospace;
-            font-size: 1.2rem;
         }
 
         .resolution-link:hover {
@@ -77,28 +71,26 @@
         }
 
         .section {
-            margin: 24px 0;
-            scroll-margin-top: 70px;
+            margin: 40px 0;
+            scroll-margin-top: 120px;
         }
 
         .section h2 {
             text-align: center;
             color: #333;
             font-family: monospace;
-            font-size: 1.8rem;
-            margin: 12px 0;
         }
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-            padding: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Reduced from 250px to 100px */
+            gap: 10px;
+            padding: 20px;
         }
 
         .gallery-item {
             background: white;
-            padding: 6px;
+            padding: 5px;
             border-radius: 4px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
@@ -108,11 +100,18 @@
         .image-container {
             position: relative;
             width: 100%;
+            /* Set a fixed aspect ratio container for images */
+            padding-bottom: 100%;
+            overflow: hidden;
         }
 
         .gallery-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover; /* This will ensure images cover the square container */
             border-radius: 2px;
             display: block;
         }
@@ -139,12 +138,12 @@
         .download-btn {
             background: #fff;
             color: #333;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 3px;
             text-decoration: none;
             font-weight: bold;
             transition: transform 0.2s;
-            font-size: 1.1rem;
+            font-size: 0.8rem;
         }
 
         .download-btn:hover {
@@ -156,23 +155,24 @@
             text-align: center;
             color: #666;
             font-family: monospace;
-            font-size: 1rem;
+            font-size: 0.7rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding: 0 2px;
         }
 
         .loader {
             text-align: center;
-            padding: 12px;
-            font-size: 1.4rem;
+            padding: 20px;
+            font-size: 18px;
         }
 
         #loading-progress {
             position: fixed;
             top: 0;
             left: 0;
-            height: 2px;
+            height: 3px;
             background: #4CAF50;
             transition: width 0.3s;
             z-index: 1001;
@@ -180,7 +180,6 @@
     </style>
 </head>
 <body>
-    <!-- Rest of the HTML remains the same -->
     <div id="loading-progress"></div>
     <div class="header">
         <h1>Image Gallery by Resolution</h1>
