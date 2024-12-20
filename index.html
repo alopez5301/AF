@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Gallery by Resolution</title>
     <style>
+        html {
+            font-size: 75%; /* Scale down by 25% */
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 120px;
+            padding-top: 90px; /* Adjusted for new scale */
             background-color: #f5f5f5;
         }
         
@@ -20,26 +24,27 @@
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             z-index: 1000;
-            padding: 10px 0;
+            padding: 8px 0;
         }
 
         .header h1 {
             margin: 0;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             color: #333;
+            font-size: 2rem;
         }
 
         .nav-container {
             overflow-x: auto;
             white-space: nowrap;
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
         }
 
         .nav-container::-webkit-scrollbar {
-            height: 6px;
+            height: 4px;
         }
 
         .nav-container::-webkit-scrollbar-track {
@@ -48,20 +53,21 @@
 
         .nav-container::-webkit-scrollbar-thumb {
             background: #888;
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .resolution-link {
             display: inline-block;
-            padding: 8px 15px;
-            margin: 0 5px;
+            padding: 6px 12px;
+            margin: 0 4px;
             background: #fff;
             color: #333;
             text-decoration: none;
-            border-radius: 20px;
+            border-radius: 16px;
             border: 1px solid #ddd;
             transition: all 0.2s;
             font-family: monospace;
+            font-size: 1.1rem;
         }
 
         .resolution-link:hover {
@@ -71,27 +77,28 @@
         }
 
         .section {
-            margin: 40px 0;
-            scroll-margin-top: 120px;
+            margin: 32px 0;
+            scroll-margin-top: 90px;
         }
 
         .section h2 {
             text-align: center;
             color: #333;
             font-family: monospace;
+            font-size: 1.8rem;
         }
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 16px;
         }
 
         .gallery-item {
             background: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
@@ -105,7 +112,7 @@
         .gallery-item img {
             width: 100%;
             height: auto;
-            border-radius: 4px;
+            border-radius: 3px;
             display: block;
         }
 
@@ -121,7 +128,7 @@
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s;
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         .image-container:hover .download-overlay {
@@ -131,11 +138,12 @@
         .download-btn {
             background: #fff;
             color: #333;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 8px 16px;
+            border-radius: 4px;
             text-decoration: none;
             font-weight: bold;
             transition: transform 0.2s;
+            font-size: 1.1rem;
         }
 
         .download-btn:hover {
@@ -143,20 +151,32 @@
         }
 
         .caption {
-            margin-top: 8px;
+            margin-top: 6px;
             text-align: center;
             color: #666;
             font-family: monospace;
+            font-size: 1rem;
         }
 
         .loader {
             text-align: center;
-            padding: 20px;
-            font-size: 18px;
+            padding: 16px;
+            font-size: 1.4rem;
+        }
+
+        #loading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #4CAF50;
+            transition: width 0.3s;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
+    <div id="loading-progress"></div>
     <div class="header">
         <h1>Image Gallery by Resolution</h1>
         <nav class="nav-container" id="resolution-nav">
@@ -176,8 +196,49 @@
             return `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
         }
 
-        function getResolutionString(width, height) {
-            return `${width}x${height}`;
+        function updateProgress(current, total) {
+            const progress = document.getElementById('loading-progress');
+            const percentage = (current / total) * 100;
+            progress.style.width = `${percentage}%`;
+            if (current === total) {
+                setTimeout(() => {
+                    progress.style.width = '0';
+                }, 500);
+            }
+        }
+
+        async function loadImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ width: img.width, height: img.height });
+                img.onerror = () => resolve(null);
+                img.src = url;
+            });
+        }
+
+        async function loadImagesInBatches(images, batchSize = 10) {
+            const results = new Map();
+            for (let i = 0; i < images.length; i += batchSize) {
+                const batch = images.slice(i, i + batchSize);
+                const promises = batch.map(file => {
+                    const url = getRawGitHubUrl(file.path);
+                    return loadImage(url).then(dimensions => {
+                        if (dimensions) {
+                            const resolution = `${dimensions.width}x${dimensions.height}`;
+                            if (!results.has(resolution)) {
+                                results.set(resolution, []);
+                            }
+                            results.get(resolution).push({
+                                path: file.path,
+                                resolution: resolution
+                            });
+                        }
+                    });
+                });
+                await Promise.all(promises);
+                updateProgress(Math.min(i + batchSize, images.length), images.length);
+            }
+            return results;
         }
 
         function createSection(resolution) {
@@ -195,15 +256,17 @@
 
         function createNavigationLinks(resolutions) {
             const nav = document.getElementById('resolution-nav');
-            nav.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             
             resolutions.forEach(resolution => {
                 const link = document.createElement('a');
                 link.href = `#res-${resolution}`;
                 link.className = 'resolution-link';
                 link.textContent = resolution;
-                nav.appendChild(link);
+                fragment.appendChild(link);
             });
+
+            nav.appendChild(fragment);
         }
 
         function createGalleryItem(imagePath, resolution) {
@@ -216,6 +279,7 @@
             const img = document.createElement('img');
             img.src = getRawGitHubUrl(imagePath);
             img.alt = imagePath.split('/').pop();
+            img.loading = 'lazy'; // Enable lazy loading
 
             const overlay = document.createElement('div');
             overlay.className = 'download-overlay';
@@ -252,29 +316,10 @@
                 const galleryContainer = document.getElementById('gallery-container');
                 galleryContainer.innerHTML = '';
 
-                const resolutionGroups = new Map();
+                // Load images in batches and get resolution groups
+                const resolutionGroups = await loadImagesInBatches(imageFiles);
 
-                for (const file of imageFiles) {
-                    const img = new Image();
-                    img.src = getRawGitHubUrl(file.path);
-                    
-                    await new Promise((resolve) => {
-                        img.onload = () => {
-                            const resolution = getResolutionString(img.width, img.height);
-                            if (!resolutionGroups.has(resolution)) {
-                                resolutionGroups.set(resolution, []);
-                            }
-                            resolutionGroups.get(resolution).push({
-                                path: file.path,
-                                resolution: resolution
-                            });
-                            resolve();
-                        };
-                        img.onerror = resolve;
-                    });
-                }
-
-                // Sort resolutions by width x height numerically
+                // Sort resolutions by total pixels
                 const resolutions = Array.from(resolutionGroups.keys())
                     .sort((a, b) => {
                         const [aWidth, aHeight] = a.split('x').map(Number);
@@ -282,9 +327,11 @@
                         return (aWidth * aHeight) - (bWidth * bHeight);
                     });
 
+                // Create all sections first
+                const fragment = document.createDocumentFragment();
                 createNavigationLinks(resolutions);
 
-                for (const resolution of resolutions) {
+                resolutions.forEach(resolution => {
                     const section = createSection(resolution);
                     const gallery = section.querySelector('.gallery');
                     
@@ -293,8 +340,11 @@
                         gallery.appendChild(item);
                     });
                     
-                    galleryContainer.appendChild(section);
-                }
+                    fragment.appendChild(section);
+                });
+
+                galleryContainer.appendChild(fragment);
+
             } catch (error) {
                 console.error('Error fetching repository contents:', error);
                 document.getElementById('gallery-container').innerHTML = 
