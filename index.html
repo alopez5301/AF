@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 120px; /* Space for fixed header */
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .nav-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .nav-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .nav-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .ratio-link {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 0 5px;
+            background: #fff;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+
+        .ratio-link:hover {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+        }
+
+        .section {
+            margin: 40px 0;
+            scroll-margin-top: 120px; /* Accounts for fixed header when scrolling to anchor */
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .download-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 4px;
+        }
+
+        .image-container:hover .download-overlay {
+            opacity: 1;
+        }
+
+        .download-btn {
+            background: #fff;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .caption {
+            margin-top: 8px;
+            text-align: center;
+            color: #666;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Image Gallery by Aspect Ratio</h1>
+        <nav class="nav-container" id="ratio-nav">
+            <!-- Navigation links will be populated here -->
+        </nav>
+    </div>
+    <div id="gallery-container">
+        <div class="loader">Loading images...</div>
+    </div>
+
+    <script>
+        const username = 'alopez5301';
+        const repo = 'AF';
+        const branch = 'main';
+        
+        function getRawGitHubUrl(path) {
+            return `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
+        }
+
+        function getExactAspectRatio(width, height) {
+            return (width / height).toFixed(6);
+        }
+
+        function createSection(ratio) {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.id = `ratio-${ratio.replace('.', '-')}`;
+            const heading = document.createElement('h2');
+            heading.textContent = `Aspect Ratio: ${ratio}`;
+            const gallery = document.createElement('div');
+            gallery.className = 'gallery';
+            section.appendChild(heading);
+            section.appendChild(gallery);
+            return section;
+        }
+
+        function createNavigationLinks(ratios) {
+            const nav = document.getElementById('ratio-nav');
+            nav.innerHTML = ''; // Clear existing links
+            
+            ratios.forEach(ratio => {
+                const link = document.createElement('a');
+                link.href = `#ratio-${ratio.replace('.', '-')}`;
+                link.className = 'ratio-link';
+                link.textContent = ratio;
+                nav.appendChild(link);
+            });
+        }
+
+        function createGalleryItem(imagePath, aspectRatio) {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+
+            const img = document.createElement('img');
+            img.src = getRawGitHubUrl(imagePath);
+            img.alt = imagePath.split('/').pop();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'download-overlay';
+            
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = getRawGitHubUrl(imagePath);
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = 'Download';
+            downloadBtn.download = imagePath.split('/').pop();
+            
+            overlay.appendChild(downloadBtn);
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(overlay);
+            
+            const caption = document.createElement('div');
+            caption.className = 'caption';
+            caption.textContent = `${imagePath.split('/').pop()} (${aspectRatio})`;
+            
+            item.appendChild(imageContainer);
+            item.appendChild(caption);
+            
+            return item;
+        }
+
+        async function initGallery() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${username}/${repo}/git/trees/${branch}?recursive=1`);
+                const data = await response.json();
+                
+                const imageFiles = data.tree
+                    .filter(file => file.path.startsWith('images/') && 
+                            /\.(jpg|jpeg|png|gif)$/i.test(file.path));
+
+                const galleryContainer = document.getElementById('gallery-container');
+                galleryContainer.innerHTML = '';
+
+                const aspectRatioGroups = new Map();
+
+                for (const file of imageFiles) {
+                    const img = new Image();
+                    img.src = getRawGitHubUrl(file.path);
+                    
+                    await new Promise((resolve) => {
+                        img.onload = () => {
+                            const ratio = getExactAspectRatio(img.width, img.height);
+                            if (!aspectRatioGroups.has(ratio)) {
+                                aspectRatioGroups.set(ratio, []);
+                            }
+                            aspectRatioGroups.get(ratio).push({
+                                path: file.path,
+                                ratio: ratio
+                            });
+                            resolve();
+                        };
+                        img.onerror = resolve;
+                    });
+                }
+
+                // Create navigation links first
+                const ratios = Array.from(aspectRatioGroups.keys()).sort();
+                createNavigationLinks(ratios);
+
+                // Then create sections
+                for (const [ratio, images] of aspectRatioGroups) {
+                    const section = createSection(ratio);
+                    const gallery = section.querySelector('.gallery');
+                    
+                    images.forEach(image => {
+                        const item = createGalleryItem(image.path, image.ratio);
+                        gallery.appendChild(item);
+                    });
+                    
+                    galleryContainer.appendChild(section);
+                }
+            } catch (error) {
+                console.error('Error fetching repository contents:', error);
+                document.getElementById('gallery-container').innerHTML = 
+                    '<div class="loader">Error loading images. Please check the console for details.</div>';
+            }
+        }
+
+        initGallery();
+    </script>
+</body>
+</html>
