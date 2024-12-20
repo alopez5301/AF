@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
+    <title>Image Gallery by Resolution</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 120px; /* Space for fixed header */
+            padding-top: 120px;
             background-color: #f5f5f5;
         }
         
@@ -51,7 +51,7 @@
             border-radius: 3px;
         }
 
-        .ratio-link {
+        .resolution-link {
             display: inline-block;
             padding: 8px 15px;
             margin: 0 5px;
@@ -61,9 +61,10 @@
             border-radius: 20px;
             border: 1px solid #ddd;
             transition: all 0.2s;
+            font-family: monospace;
         }
 
-        .ratio-link:hover {
+        .resolution-link:hover {
             background: #333;
             color: #fff;
             border-color: #333;
@@ -71,7 +72,13 @@
 
         .section {
             margin: 40px 0;
-            scroll-margin-top: 120px; /* Accounts for fixed header when scrolling to anchor */
+            scroll-margin-top: 120px;
+        }
+
+        .section h2 {
+            text-align: center;
+            color: #333;
+            font-family: monospace;
         }
 
         .gallery {
@@ -139,6 +146,7 @@
             margin-top: 8px;
             text-align: center;
             color: #666;
+            font-family: monospace;
         }
 
         .loader {
@@ -150,8 +158,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>Image Gallery by Aspect Ratio</h1>
-        <nav class="nav-container" id="ratio-nav">
+        <h1>Image Gallery by Resolution</h1>
+        <nav class="nav-container" id="resolution-nav">
             <!-- Navigation links will be populated here -->
         </nav>
     </div>
@@ -168,16 +176,16 @@
             return `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
         }
 
-        function getExactAspectRatio(width, height) {
-            return (width / height).toFixed(6);
+        function getResolutionString(width, height) {
+            return `${width}x${height}`;
         }
 
-        function createSection(ratio) {
+        function createSection(resolution) {
             const section = document.createElement('div');
             section.className = 'section';
-            section.id = `ratio-${ratio.replace('.', '-')}`;
+            section.id = `res-${resolution}`;
             const heading = document.createElement('h2');
-            heading.textContent = `Aspect Ratio: ${ratio}`;
+            heading.textContent = `Resolution: ${resolution}`;
             const gallery = document.createElement('div');
             gallery.className = 'gallery';
             section.appendChild(heading);
@@ -185,20 +193,20 @@
             return section;
         }
 
-        function createNavigationLinks(ratios) {
-            const nav = document.getElementById('ratio-nav');
-            nav.innerHTML = ''; // Clear existing links
+        function createNavigationLinks(resolutions) {
+            const nav = document.getElementById('resolution-nav');
+            nav.innerHTML = '';
             
-            ratios.forEach(ratio => {
+            resolutions.forEach(resolution => {
                 const link = document.createElement('a');
-                link.href = `#ratio-${ratio.replace('.', '-')}`;
-                link.className = 'ratio-link';
-                link.textContent = ratio;
+                link.href = `#res-${resolution}`;
+                link.className = 'resolution-link';
+                link.textContent = resolution;
                 nav.appendChild(link);
             });
         }
 
-        function createGalleryItem(imagePath, aspectRatio) {
+        function createGalleryItem(imagePath, resolution) {
             const item = document.createElement('div');
             item.className = 'gallery-item';
             
@@ -224,7 +232,7 @@
             
             const caption = document.createElement('div');
             caption.className = 'caption';
-            caption.textContent = `${imagePath.split('/').pop()} (${aspectRatio})`;
+            caption.textContent = `${imagePath.split('/').pop()} (${resolution})`;
             
             item.appendChild(imageContainer);
             item.appendChild(caption);
@@ -239,12 +247,12 @@
                 
                 const imageFiles = data.tree
                     .filter(file => file.path.startsWith('images/') && 
-                            /\.(jpg|jpeg|png|gif)$/i.test(file.path));
+                            /\.(jpg|jpeg|png|bmp)$/i.test(file.path));
 
                 const galleryContainer = document.getElementById('gallery-container');
                 galleryContainer.innerHTML = '';
 
-                const aspectRatioGroups = new Map();
+                const resolutionGroups = new Map();
 
                 for (const file of imageFiles) {
                     const img = new Image();
@@ -252,13 +260,13 @@
                     
                     await new Promise((resolve) => {
                         img.onload = () => {
-                            const ratio = getExactAspectRatio(img.width, img.height);
-                            if (!aspectRatioGroups.has(ratio)) {
-                                aspectRatioGroups.set(ratio, []);
+                            const resolution = getResolutionString(img.width, img.height);
+                            if (!resolutionGroups.has(resolution)) {
+                                resolutionGroups.set(resolution, []);
                             }
-                            aspectRatioGroups.get(ratio).push({
+                            resolutionGroups.get(resolution).push({
                                 path: file.path,
-                                ratio: ratio
+                                resolution: resolution
                             });
                             resolve();
                         };
@@ -266,17 +274,22 @@
                     });
                 }
 
-                // Create navigation links first
-                const ratios = Array.from(aspectRatioGroups.keys()).sort();
-                createNavigationLinks(ratios);
+                // Sort resolutions by width x height numerically
+                const resolutions = Array.from(resolutionGroups.keys())
+                    .sort((a, b) => {
+                        const [aWidth, aHeight] = a.split('x').map(Number);
+                        const [bWidth, bHeight] = b.split('x').map(Number);
+                        return (aWidth * aHeight) - (bWidth * bHeight);
+                    });
 
-                // Then create sections
-                for (const [ratio, images] of aspectRatioGroups) {
-                    const section = createSection(ratio);
+                createNavigationLinks(resolutions);
+
+                for (const resolution of resolutions) {
+                    const section = createSection(resolution);
                     const gallery = section.querySelector('.gallery');
                     
-                    images.forEach(image => {
-                        const item = createGalleryItem(image.path, image.ratio);
+                    resolutionGroups.get(resolution).forEach(image => {
+                        const item = createGalleryItem(image.path, image.resolution);
                         gallery.appendChild(item);
                     });
                     
