@@ -4,90 +4,210 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skrunks Image Repo</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
-        .image-card {
-            transition: all 0.3s ease;
+        html {
+            font-size: 50%;
         }
         
-        .image-card:hover {
-            transform: translateY(-2px);
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 70px; /* Adjusted for new scale */
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 6px 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            padding: 6px;
+            text-align: center;
+            color: #333;
+            font-size: 2.2rem;
+        }
+
+        .nav-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-container::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .nav-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .nav-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 2px;
+        }
+
+        .resolution-link {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 0 3px;
+            background: #fff;
+            color: #333;
+            text-decoration: none;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        .resolution-link:hover {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+        }
+
+        .section {
+            margin: 24px 0;
+            scroll-margin-top: 70px;
+        }
+
+        .section h2 {
+            text-align: center;
+            color: #333;
+            font-family: monospace;
+            font-size: 1.8rem;
+            margin: 12px 0;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .gallery-item {
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 2px;
+            display: block;
         }
 
         .download-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             opacity: 0;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.3s;
+            border-radius: 2px;
         }
 
-        .image-card:hover .download-overlay {
+        .image-container:hover .download-overlay {
             opacity: 1;
         }
 
-        .progress-bar {
-            transition: width 0.3s ease;
+        .download-btn {
+            background: #fff;
+            color: #333;
+            padding: 6px 12px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            font-size: 1.1rem;
         }
 
-        .resolution-btn {
-            transition: all 0.2s ease;
+        .download-btn:hover {
+            transform: scale(1.05);
         }
 
-        .resolution-btn:hover {
-            transform: translateY(-1px);
+        .caption {
+            margin-top: 4px;
+            text-align: center;
+            color: #666;
+            font-family: monospace;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .header {
-            backdrop-filter: blur(8px);
+        .loader {
+            text-align: center;
+            padding: 12px;
+            font-size: 1.4rem;
         }
 
-        body {
-            background: linear-gradient(to bottom right, #f3e8ff, #e0f2fe);
-            min-height: 100vh;
+        #loading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: #4CAF50;
+            transition: width 0.3s;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
-    <!-- Progress Bar -->
-    <div id="progress-container" class="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
-        <div id="progress-bar" class="h-full bg-blue-500 progress-bar" style="width: 0%"></div>
+    <div id="loading-progress"></div>
+    <div class="header">
+        <h1>Skrunks image Repo</h1>
+        <nav class="nav-container" id="resolution-nav">
+        </nav>
     </div>
-
-    <!-- Header -->
-    <div class="fixed top-0 left-0 right-0 bg-white bg-opacity-80 shadow-md z-40 header">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-800">
-                    📸 Skrunks Image Repo
-                </h1>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 pt-24 pb-12">
-        <!-- Loading State -->
-        <div id="loading" class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-            <p class="text-gray-600">Loading your images...</p>
-        </div>
-
-        <!-- Resolution Navigation -->
-        <div id="resolution-nav" class="mb-8 flex flex-wrap gap-2 hidden"></div>
-
-        <!-- Image Grid -->
-        <div id="image-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 hidden"></div>
+    <div id="gallery-container">
+        <div class="loader">Loading images...</div>
     </div>
 
     <script>
         const username = 'alopez5301';
         const repo = 'AF';
         const branch = 'main';
-
+        
         function getRawGitHubUrl(path) {
             return `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
         }
 
-        function updateProgress(percentage) {
-            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        function updateProgress(current, total) {
+            const progress = document.getElementById('loading-progress');
+            const percentage = (current / total) * 100;
+            progress.style.width = `${percentage}%`;
+            if (current === total) {
+                setTimeout(() => {
+                    progress.style.width = '0';
+                }, 500);
+            }
         }
 
         async function loadImage(url) {
@@ -119,61 +239,72 @@
                     });
                 });
                 await Promise.all(promises);
-                updateProgress(Math.min(((i + batchSize) / images.length) * 100, 100));
+                updateProgress(Math.min(i + batchSize, images.length), images.length);
             }
             return results;
         }
 
-        function createImageCard(image) {
-            return `
-                <div class="bg-white rounded-lg shadow-md overflow-hidden image-card">
-                    <div class="p-3">
-                        <div class="relative aspect-square">
-                            <img
-                                src="${getRawGitHubUrl(image.path)}"
-                                alt="${image.path.split('/').pop()}"
-                                class="w-full h-full object-cover rounded-md"
-                            />
-                            <div class="download-overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-md">
-                                <a
-                                    href="${getRawGitHubUrl(image.path)}"
-                                    download="${image.path.split('/').pop()}"
-                                    class="flex items-center gap-2 bg-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors"
-                                >
-                                    ⬇️ Download
-                                </a>
-                            </div>
-                        </div>
-                        <p class="mt-2 text-sm text-gray-600 truncate text-center">
-                            ${image.path.split('/').pop()}
-                        </p>
-                    </div>
-                </div>
-            `;
+        function createSection(resolution) {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.id = `res-${resolution}`;
+            const heading = document.createElement('h2');
+            heading.textContent = `Resolution: ${resolution}`;
+            const gallery = document.createElement('div');
+            gallery.className = 'gallery';
+            section.appendChild(heading);
+            section.appendChild(gallery);
+            return section;
         }
 
-        function showResolution(resolutionGroups, resolution) {
-            const imageGrid = document.getElementById('image-grid');
-            imageGrid.innerHTML = '';
+        function createNavigationLinks(resolutions) {
+            const nav = document.getElementById('resolution-nav');
+            const fragment = document.createDocumentFragment();
             
-            const images = resolutionGroups.get(resolution);
-            images.forEach(image => {
-                const cardHtml = createImageCard(image);
-                const container = document.createElement('div');
-                container.innerHTML = cardHtml;
-                imageGrid.appendChild(container.firstChild);
+            resolutions.forEach(resolution => {
+                const link = document.createElement('a');
+                link.href = `#res-${resolution}`;
+                link.className = 'resolution-link';
+                link.textContent = resolution;
+                fragment.appendChild(link);
             });
 
-            // Update active resolution button
-            document.querySelectorAll('.resolution-btn').forEach(btn => {
-                if (btn.textContent === resolution) {
-                    btn.classList.add('bg-blue-500', 'text-white', 'shadow-md');
-                    btn.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-100');
-                } else {
-                    btn.classList.remove('bg-blue-500', 'text-white', 'shadow-md');
-                    btn.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-100');
-                }
-            });
+            nav.appendChild(fragment);
+        }
+
+        function createGalleryItem(imagePath, resolution) {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+
+            const img = document.createElement('img');
+            img.src = getRawGitHubUrl(imagePath);
+            img.alt = imagePath.split('/').pop();
+            img.loading = 'lazy';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'download-overlay';
+            
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = getRawGitHubUrl(imagePath);
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = 'Download';
+            downloadBtn.download = imagePath.split('/').pop();
+            
+            overlay.appendChild(downloadBtn);
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(overlay);
+            
+            const caption = document.createElement('div');
+            caption.className = 'caption';
+            caption.textContent = `${imagePath.split('/').pop()} (${resolution})`;
+            
+            item.appendChild(imageContainer);
+            item.appendChild(caption);
+            
+            return item;
         }
 
         async function initGallery() {
@@ -185,14 +316,11 @@
                     .filter(file => file.path.startsWith('images/') && 
                             /\.(jpg|jpeg|png|bmp)$/i.test(file.path));
 
+                const galleryContainer = document.getElementById('gallery-container');
+                galleryContainer.innerHTML = '';
+
                 const resolutionGroups = await loadImagesInBatches(imageFiles);
 
-                // Hide loading state
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('resolution-nav').classList.remove('hidden');
-                document.getElementById('image-grid').classList.remove('hidden');
-
-                // Sort resolutions
                 const resolutions = Array.from(resolutionGroups.keys())
                     .sort((a, b) => {
                         const [aWidth, aHeight] = a.split('x').map(Number);
@@ -200,25 +328,27 @@
                         return (aWidth * aHeight) - (bWidth * bHeight);
                     });
 
-                // Create resolution buttons
-                const navContainer = document.getElementById('resolution-nav');
+                const fragment = document.createDocumentFragment();
+                createNavigationLinks(resolutions);
+
                 resolutions.forEach(resolution => {
-                    const button = document.createElement('button');
-                    button.textContent = resolution;
-                    button.className = 'resolution-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100';
-                    button.onclick = () => showResolution(resolutionGroups, resolution);
-                    navContainer.appendChild(button);
+                    const section = createSection(resolution);
+                    const gallery = section.querySelector('.gallery');
+                    
+                    resolutionGroups.get(resolution).forEach(image => {
+                        const item = createGalleryItem(image.path, image.resolution);
+                        gallery.appendChild(item);
+                    });
+                    
+                    fragment.appendChild(section);
                 });
 
-                // Show first resolution
-                if (resolutions.length > 0) {
-                    showResolution(resolutionGroups, resolutions[0]);
-                }
+                galleryContainer.appendChild(fragment);
 
             } catch (error) {
                 console.error('Error fetching repository contents:', error);
-                document.getElementById('loading').innerHTML = 
-                    '<p class="text-red-500">Error loading images. Please check the console for details.</p>';
+                document.getElementById('gallery-container').innerHTML = 
+                    '<div class="loader">Error loading images. Please check the console for details.</div>';
             }
         }
 
